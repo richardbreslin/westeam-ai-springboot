@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.data.Friend;
 import com.example.demo.data.Game;
+import com.example.demo.data.GameDetails;
 import com.example.demo.service.GeminiService;
 import com.example.demo.service.SteamService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -56,14 +57,13 @@ public class MainController {
         String cleanedAppIdDetailsList = appIdDetailsList.replaceAll("[^a-zA-Z0-9, ]", "");
         String JSONSchema = """
                 Game1: GameNameHere,Reasoning: Reason for recommendation here""";
-        return geminiService.callGeminiAI("Give me 5 Game recommendations for me and my friends to play with from the following steam app ids list:" + appIdListCSV + " Here is also the steam store data for these games: " + cleanedAppIdDetailsList + "Return me your reccomendations in this JSON formatted schema: " + JSONSchema);
+        return "Give me 5 Game recommendations for me and my friends to play with from the following steam app ids list:" + appIdListCSV + " Here is also the steam store data for these games: " + cleanedAppIdDetailsList + "Return me your reccomendations in this JSON formatted schema: " + JSONSchema;
     }
 
     @GetMapping("api/getGameDetails")
-    public List<String> getGameDetails(@RequestParam List<String> appid) throws JsonProcessingException {
+    public List<GameDetails> getGameDetails(@RequestParam List<String> appid) throws JsonProcessingException {
     return steamService.getGameDetails(appid);
     }
-
 
 
 

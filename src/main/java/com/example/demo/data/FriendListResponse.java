@@ -13,8 +13,6 @@ public class FriendListResponse {
     @JsonProperty("friendslist")
     private FriendsList friendsList;
 
-    //test commit
-
     public void setFriendsList(FriendsList friendsList) {
         this.friendsList = friendsList;
     }

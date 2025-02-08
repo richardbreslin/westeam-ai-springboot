@@ -65,13 +65,15 @@ public class SteamService {
         return allOwnedGames;
     }
 
-    public List<String> getGameDetails(List<String> appId) throws JsonProcessingException {
-        List<String> gameDetails = new ArrayList<>();
+    public List<GameDetails> getGameDetails(List<String> appId) throws JsonProcessingException {
+        List<GameDetails> gameDetails = new ArrayList<>();
 
         for (String appid : appId) {
-            String url = "https://store.steampowered.com/api/appdetails?appids=" + appid;
+            String url = "https://store.steampowered.com/api/appdetails?appids=" + appid + "&l=english";
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-            gameDetails.add(response.getBody());
+            ObjectMapper mapper = new ObjectMapper();
+            GameDetails gameDetail = mapper.readValue(response.getBody(), GameDetails.class);
+            gameDetails.add(gameDetail);
         }
         return gameDetails;
     }
