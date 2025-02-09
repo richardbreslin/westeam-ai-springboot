@@ -29,8 +29,6 @@ public class SteamService {
         ObjectMapper mapper = new ObjectMapper();
         FriendListResponse friendListResponse = mapper.readValue(response.getBody(), FriendListResponse.class);
         List<Friend> friends = friendListResponse.getFriendsList().getFriends();
-        System.out.println(friends);
-
         return friends;
     }
 
@@ -40,15 +38,12 @@ public class SteamService {
         ObjectMapper mapper = new ObjectMapper();
         GameListResponse gameListResponse = mapper.readValue(response.getBody(), GameListResponse.class);
         List<Game> games = gameListResponse.getResponse().getGameList();
-        System.out.println(games);
-
         return games;
     }
 
     public List<Game> getCommonlyOwnedGames(List<String> steamId) throws JsonProcessingException {
         List<Game> allOwnedGames = new ArrayList<>();
         for (String id : steamId) {
-            System.out.println(id);
             if (allOwnedGames.isEmpty()) {
                 allOwnedGames.addAll(getOwnedGames(id));
             } else {

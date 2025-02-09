@@ -1,8 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.data.Friend;
-import com.example.demo.data.Game;
-import com.example.demo.data.GameDetails;
+import com.example.demo.data.*;
 import com.example.demo.service.GeminiService;
 import com.example.demo.service.SteamService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,14 +49,12 @@ public class MainController {
     }
 
     @GetMapping("api/getRecommendations")
-    public String getReccomentations() throws JsonProcessingException {
+    public ResponseEntity<GemeniRecommendations> getReccomentations() throws JsonProcessingException {
         List<Game> gamesList = getOwnedGames(Arrays.asList("76561198040415511", "76561198028109433"));
-        String appIdListCSV = gamesList.stream().map(game -> String.valueOf(game.getAppid())).collect(Collectors.joining(","));
-        String appIdDetailsList = getGameDetails(Arrays.asList(appIdListCSV.split(","))).toString();
-        String cleanedAppIdDetailsList = appIdDetailsList.replaceAll("[^a-zA-Z0-9, ]", "");
-        String JSONSchema = """
-                Game1: GameNameHere,Reasoning: Reason for recommendation here""";
-        return "Give me 5 Game recommendations for me and my friends to play with from the following steam app ids list:" + appIdListCSV + " Here is also the steam store data for these games: " + cleanedAppIdDetailsList + "Return me your reccomendations in this JSON formatted schema: " + JSONSchema;
+        String GameListCSV = gamesList.stream().map(game -> String.valueOf(game.getAppid())).collect(Collectors.joining(","));
+        List<GameDetails> GameDetailsList = getGameDetails(Arrays.asList(GameListCSV.split(",")));
+        String prompt = new Prompt().buildPrompt(GameDetailsList);
+        return geminiService.callGeminiAI(prompt);
     }
 
     @GetMapping("api/getGameDetails")
