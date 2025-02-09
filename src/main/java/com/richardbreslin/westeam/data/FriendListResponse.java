@@ -1,4 +1,4 @@
-package com.example.demo.data;
+package com.richardbreslin.westeam.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.example.demo.data;
+package com.richardbreslin.westeam.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

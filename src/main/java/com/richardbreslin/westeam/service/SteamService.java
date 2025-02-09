@@ -1,8 +1,8 @@
-package com.example.demo.service;
+package com.richardbreslin.westeam.service;
 
-import com.example.demo.data.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.richardbreslin.westeam.data.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;

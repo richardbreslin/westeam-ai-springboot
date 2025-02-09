@@ -1,8 +1,8 @@
-package com.example.demo.controller;
+package com.richardbreslin.westeam.controller;
 
-import com.example.demo.data.*;
-import com.example.demo.service.GeminiService;
-import com.example.demo.service.SteamService;
+import com.richardbreslin.westeam.data.*;
+import com.richardbreslin.westeam.service.GeminiService;
+import com.richardbreslin.westeam.service.SteamService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
