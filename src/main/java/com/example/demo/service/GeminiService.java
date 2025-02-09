@@ -21,51 +21,53 @@ public class GeminiService {
         this.restTemplate = restTemplate;
     }
 
-    public ResponseEntity<GemeniRecommendations> callGeminiAI(String prompt) {
+    public ResponseEntity<GeminiRecommendationsResponse> callGeminiAI(String prompt) {
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
-        String requestBody = "";
+        String response = restTemplate.postForEntity(url, buildRequestBody(prompt), String.class).getBody();
+        return ResponseEntity.ok(buildRecommendations(response));
+    }
 
-        GemeniRequest gemeniRequest = GemeniRequest.builder()
+    private String buildRequestBody(String prompt) {
+        GeminiRequest gemeniRequest = GeminiRequest.builder()
                 .contents(List.of(
-                        GemeniRequest.Content.builder()
+                        GeminiRequest.Content.builder()
                                 .parts(List.of(
-                                        GemeniRequest.Part.builder()
+                                        GeminiRequest.Part.builder()
                                                 .text(prompt)
                                                 .build()
                                 ))
                                 .build()
                 ))
                 .build();
-
+        String requestBody;
         try {
             ObjectMapper mapper = new ObjectMapper();
             requestBody = mapper.writeValueAsString(gemeniRequest);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error processing JSON", e);
         }
+        return requestBody;
+    }
 
-
-        String response = restTemplate.postForEntity(url, requestBody, String.class).getBody();
+    private GeminiRecommendationsResponse buildRecommendations(String response) {
         ObjectMapper mapper = new ObjectMapper();
-        GemeniResponse gemeniResponse;
+        GeminiResponse gemeniResponse;
         try {
-            gemeniResponse = mapper.readValue(response, GemeniResponse.class);
+            gemeniResponse = mapper.readValue(response, GeminiResponse.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error processing JSON response", e);
         }
 
         String GemeniRecommendationsJSON = gemeniResponse.getCandidates().getFirst().getContent().getParts().getFirst().getText();
         String GemeniRecommendationsJSONCleaned = GemeniRecommendationsJSON.replaceFirst("^```json\\n", "").replaceFirst("\\n```$", "");
-        GemeniRecommendations recommendations = new GemeniRecommendations();
+        GeminiRecommendationsResponse recommendations = new GeminiRecommendationsResponse();
 
         try {
-             recommendations = mapper.readValue(GemeniRecommendationsJSONCleaned, GemeniRecommendations.class);
-
+            recommendations = mapper.readValue(GemeniRecommendationsJSONCleaned, GeminiRecommendationsResponse.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error processing JSON response", e);
         }
-
-        return ResponseEntity.ok(recommendations);
+        return recommendations;
     }
 
 }

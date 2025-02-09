@@ -4,7 +4,6 @@ import com.example.demo.data.*;
 import com.example.demo.service.GeminiService;
 import com.example.demo.service.SteamService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -21,10 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 public class MainController {
 
-    @Autowired
     private final SteamService steamService;
-
-    @Autowired
     private final GeminiService geminiService;
 
     public MainController(SteamService steamService, GeminiService geminiService) {
@@ -48,9 +44,10 @@ public class MainController {
         return steamService.getCommonlyOwnedGames(steamId);
     }
 
+    // Example Data: "76561198040415511", "76561198028109433"
     @GetMapping("api/getRecommendations")
-    public ResponseEntity<GemeniRecommendations> getReccomentations() throws JsonProcessingException {
-        List<Game> gamesList = getOwnedGames(Arrays.asList("76561198040415511", "76561198028109433"));
+    public ResponseEntity<GeminiRecommendationsResponse> getReccomentations(@RequestParam List<String> steamId) throws JsonProcessingException {
+        List<Game> gamesList = getOwnedGames(steamId);
         String GameListCSV = gamesList.stream().map(game -> String.valueOf(game.getAppid())).collect(Collectors.joining(","));
         List<GameDetails> GameDetailsList = getGameDetails(Arrays.asList(GameListCSV.split(",")));
         String prompt = new Prompt().buildPrompt(GameDetailsList);
@@ -61,15 +58,4 @@ public class MainController {
     public List<GameDetails> getGameDetails(@RequestParam List<String> appid) throws JsonProcessingException {
     return steamService.getGameDetails(appid);
     }
-
-
-
-    //endpoints needed
-    //input single steam id -- eventually use steam login
-        //select / search - friends list
-    //get friendslist owned games + users owned games
-    //call gemini AI API with users owned games + friends owned games
-    //display results
-
-
 }

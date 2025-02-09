@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 
-public class GemeniRecommendations {
+public class GeminiRecommendationsResponse {
     @JsonProperty("recommendations")
     public ArrayList<Recommendation> getRecommendations() {
         return this.recommendations;

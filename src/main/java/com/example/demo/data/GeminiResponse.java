@@ -1,6 +1,5 @@
 package com.example.demo.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,7 @@ import java.util.ArrayList;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class GemeniResponse {
+public class GeminiResponse {
 
     @JsonProperty("candidates")
     public ArrayList<Candidate> getCandidates() {

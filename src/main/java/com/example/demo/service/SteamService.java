@@ -28,8 +28,7 @@ public class SteamService {
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
         ObjectMapper mapper = new ObjectMapper();
         FriendListResponse friendListResponse = mapper.readValue(response.getBody(), FriendListResponse.class);
-        List<Friend> friends = friendListResponse.getFriendsList().getFriends();
-        return friends;
+        return friendListResponse.getFriendsList().getFriends();
     }
 
     public List<Game> getOwnedGames(String steamId) throws JsonProcessingException {

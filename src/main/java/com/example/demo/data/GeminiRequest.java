@@ -9,7 +9,7 @@ import java.util.List;
 @Setter
 @Getter
 @Builder
-public class GemeniRequest {
+public class GeminiRequest {
     private List<Content> contents;
 
     @Setter
