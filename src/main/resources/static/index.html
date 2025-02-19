@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Steam Friends Lookup</title>
+
+    <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Tailwind for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="flex items-center justify-center h-screen bg-gray-100">
@@ -13,19 +19,15 @@
 <div class="text-center bg-white p-6 rounded-lg shadow-md w-96" x-data="friendsApp()">
     <h1 class="text-xl font-bold mb-4">Steam Friends Lookup</h1>
 
-    <!-- Input Field with HTMX Enhancement -->
+    <!-- Input Field -->
     <input
             type="text"
             x-model="steamId"
             placeholder="Enter Steam ID..."
             class="w-full p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
-            hx-trigger="keyup changed delay:500ms"
-            hx-get="/api/getFriends"
-            hx-target="#friendsList"
-            hx-swap="innerHTML"
     >
 
-    <!-- Button to Fetch Friends (Alpine.js) -->
+    <!-- Submit Button -->
     <button
             @click="fetchFriends"
             class="mt-4 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
@@ -33,8 +35,8 @@
         Submit
     </button>
 
-    <!-- Friends List (HTMX Updates the Inner Content) -->
-    <div id="friendsList" class="mt-4 text-left">
+    <!-- Friends List -->
+    <div id="friendsList" class="mt-4 overflow-y-auto max-h-80 bg-gray-100 p-3 rounded-md">
         <template x-if="loading">
             <p class="text-blue-500">Loading...</p>
         </template>
@@ -43,9 +45,9 @@
             <p class="text-red-500" x-text="error"></p>
         </template>
 
-        <ul x-show="friends.length" class="mt-4 space-y-4">
+        <ul x-show="friends.length" class="space-y-4">
             <template x-for="friend in friends" :key="friend.steamid">
-                <li class="flex items-center p-3 bg-gray-200 rounded-md">
+                <li class="flex items-center p-3 bg-white shadow rounded-md">
                     <img :src="friend.avatarfull" alt="Avatar" class="w-12 h-12 rounded-full mr-3">
                     <div>
                         <a :href="friend.profileurl" target="_blank" class="font-semibold text-blue-600 hover:underline" x-text="friend.personaname"></a>
