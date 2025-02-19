@@ -16,64 +16,69 @@
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
 
-<div class="text-center bg-white p-6 rounded-lg shadow-md w-96" x-data="friendsApp()">
-    <h1 class="text-xl font-bold mb-4">Steam Friends Lookup</h1>
+<div x-data="friendsApp()" class="flex w-full max-w-5xl bg-white p-6 rounded-lg shadow-md space-x-6">
 
-    <!-- Input Field -->
-    <input
-            type="text"
-            x-model="steamId"
-            placeholder="Enter Steam ID..."
-            class="w-full p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
-    >
+    <!-- Friends List Panel (Left) -->
+    <div class="flex-1">
+        <h1 class="text-xl font-bold mb-4 text-center">Steam Friends Lookup</h1>
 
-    <!-- Submit Button -->
-    <button
-            @click="fetchFriends"
-            class="mt-4 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
-    >
-        Submit
-    </button>
+        <!-- Input Field -->
+        <input
+                type="text"
+                x-model="steamId"
+                placeholder="Enter Steam ID..."
+                class="w-full p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+        >
 
-    <!-- Search Friends -->
-    <input
-            type="text"
-            x-model="searchQuery"
-            placeholder="Search friends..."
-            class="w-full mt-4 p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
-    >
+        <!-- Submit Button -->
+        <button
+                @click="fetchFriends"
+                class="mt-4 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+        >
+            Submit
+        </button>
 
-    <!-- Friends List -->
-    <div id="friendsList" class="mt-4 overflow-y-auto max-h-[500px] bg-gray-100 p-3 rounded-md">
-        <template x-if="loading">
-            <p class="text-blue-500">Loading...</p>
-        </template>
+        <!-- Search Friends -->
+        <input
+                type="text"
+                x-model="searchQuery"
+                placeholder="Search friends..."
+                class="w-full mt-4 p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+        >
 
-        <template x-if="error">
-            <p class="text-red-500" x-text="error"></p>
-        </template>
-
-        <ul x-show="filteredFriends.length" class="space-y-4">
-            <template x-for="friend in filteredFriends" :key="friend.steamid">
-                <li class="flex items-center justify-between p-3 bg-white shadow rounded-md">
-                    <div class="flex items-center">
-                        <img :src="friend.avatarfull" alt="Avatar" class="w-12 h-12 rounded-full mr-3">
-                        <a :href="friend.profileurl" target="_blank" class="font-semibold text-blue-600 hover:underline" x-text="friend.personaname"></a>
-                    </div>
-                    <button
-                            @click="addFriend(friend)"
-                            class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
-                    >
-                        Add
-                    </button>
-                </li>
+        <!-- Friends List -->
+        <div id="friendsList" class="mt-4 overflow-y-auto max-h-[500px] bg-gray-100 p-3 rounded-md">
+            <template x-if="loading">
+                <p class="text-blue-500">Loading...</p>
             </template>
-        </ul>
+
+            <template x-if="error">
+                <p class="text-red-500" x-text="error"></p>
+            </template>
+
+            <ul x-show="filteredFriends.length" class="space-y-4">
+                <template x-for="friend in filteredFriends" :key="friend.steamid">
+                    <li class="flex items-center justify-between p-3 bg-white shadow rounded-md">
+                        <div class="flex items-center">
+                            <img :src="friend.avatarfull" alt="Avatar" class="w-12 h-12 rounded-full mr-3">
+                            <a :href="friend.profileurl" target="_blank" class="font-semibold text-blue-600 hover:underline" x-text="friend.personaname"></a>
+                        </div>
+                        <button
+                                @click="addFriend(friend)"
+                                class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
+                        >
+                            Add
+                        </button>
+                    </li>
+                </template>
+            </ul>
+        </div>
     </div>
 
-    <!-- Selected Friends List -->
-    <div class="mt-6 bg-gray-200 p-4 rounded-md">
-        <h2 class="text-lg font-bold mb-2">Selected Friends</h2>
+    <!-- Selected Friends Panel (Right) -->
+    <div x-show="selectedFriends.length > 0" x-transition:enter="transition-all ease-in-out duration-500" x-transition:leave="transition-all ease-in-out duration-500" class="w-full sm:w-1/2 bg-gray-200 p-4 rounded-md">
+        <h2 class="text-lg font-bold mb-2 text-center">Selected Friends</h2>
+
         <ul class="space-y-2">
             <template x-for="friend in selectedFriends" :key="friend.steamid">
                 <li class="flex items-center justify-between bg-white p-2 rounded-md shadow">
@@ -87,16 +92,17 @@
                 </li>
             </template>
         </ul>
+
+        <!-- Submit Selected Friends -->
+        <button
+                @click="submitFriends"
+                class="mt-4 w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800"
+                :disabled="selectedFriends.length === 0"
+        >
+            Get Recommendations
+        </button>
     </div>
 
-    <!-- Submit Selected Friends -->
-    <button
-            @click="submitFriends"
-            class="mt-4 w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800"
-            :disabled="selectedFriends.length === 0"
-    >
-        Get Recommendations
-    </button>
 </div>
 
 <script>
