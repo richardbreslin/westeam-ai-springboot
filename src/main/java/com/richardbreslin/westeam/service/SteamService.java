@@ -23,13 +23,13 @@ public class SteamService {
         this.restTemplate = restTemplate;
     }
 
-    public List<Friend> getFriends(String steamId) throws JsonProcessingException {
-        String url = "http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=" + steamApiKey + "&steamid=" + steamId + "&relationship=friend";
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-        ObjectMapper mapper = new ObjectMapper();
-        FriendListResponse friendListResponse = mapper.readValue(response.getBody(), FriendListResponse.class);
-        return friendListResponse.getFriendsList().getFriends();
+    public ResponseEntity<String> getFriends(String steamId) throws JsonProcessingException {
+        FriendListResponse friendListResponse = ISteamUserGetFriendList(steamId);
+        String url = buildFriendsListDetailsURL(friendListResponse.getFriendsList().getFriends());
+        return restTemplate.getForEntity(url, String.class);
     }
+
+
 
     public List<Game> getOwnedGames(String steamId) throws JsonProcessingException {
         String url = "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=" + steamApiKey + "&steamid=" + steamId + "&format=friend";
@@ -70,5 +70,20 @@ public class SteamService {
             gameDetails.add(gameDetail);
         }
         return gameDetails;
+    }
+
+    private FriendListResponse ISteamUserGetFriendList(String steamId) throws JsonProcessingException {
+        String ISteamUserGetFriendListURL = "http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=" + steamApiKey + "&steamid=" + steamId + "&relationship=friend";
+        ResponseEntity<String> response = restTemplate.getForEntity(ISteamUserGetFriendListURL, String.class);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(response.getBody(), FriendListResponse.class);
+    }
+
+    private String buildFriendsListDetailsURL(List<Friend> friends) {
+        StringBuilder url = new StringBuilder("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=" + steamApiKey + "&steamids=");
+        for (Friend friend : friends) {
+            url.append(friend.getSteamid()).append(",");
+        }
+        return url.toString();
     }
 }

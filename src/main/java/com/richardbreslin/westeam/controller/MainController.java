@@ -28,14 +28,8 @@ public class MainController {
         this.geminiService = geminiService;
     }
 
-    //Home Page
-    @GetMapping("/")
-    public Resource home() {
-        return new ClassPathResource("static/index.html");
-    }
-
     @GetMapping("/api/getFriends")
-    public List<Friend> getFriends(@RequestParam String steamId) throws JsonProcessingException {
+    public ResponseEntity<String> getFriends(@RequestParam String steamId) throws JsonProcessingException {
         return steamService.getFriends(steamId);
     }
 
