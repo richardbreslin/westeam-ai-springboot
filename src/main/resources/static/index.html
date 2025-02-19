@@ -43,11 +43,13 @@
             <p class="text-red-500" x-text="error"></p>
         </template>
 
-        <ul x-show="friends.length" class="mt-4 space-y-2">
+        <ul x-show="friends.length" class="mt-4 space-y-4">
             <template x-for="friend in friends" :key="friend.steamid">
-                <li class="p-2 bg-gray-200 rounded-md">
-                    <strong>Steam ID:</strong> <span x-text="friend.steamid"></span> <br>
-                    <strong>Since:</strong> <span x-text="friend.friend_since"></span>
+                <li class="flex items-center p-3 bg-gray-200 rounded-md">
+                    <img :src="friend.avatarfull" alt="Avatar" class="w-12 h-12 rounded-full mr-3">
+                    <div>
+                        <a :href="friend.profileurl" target="_blank" class="font-semibold text-blue-600 hover:underline" x-text="friend.personaname"></a>
+                    </div>
                 </li>
             </template>
         </ul>
@@ -76,7 +78,9 @@
                     const response = await fetch(`/api/getFriends?steamId=${this.steamId}`);
                     if (!response.ok) throw new Error('Failed to fetch friends.');
 
-                    this.friends = await response.json();
+                    const data = await response.json();
+                    this.friends = data.response.players;
+
                     if (this.friends.length === 0) {
                         this.error = 'No friends found for this Steam ID.';
                     }
