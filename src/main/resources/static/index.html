@@ -14,7 +14,7 @@
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body class="flex items-center justify-center h-screen bg-gray-100">
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
 
 <div class="text-center bg-white p-6 rounded-lg shadow-md w-96" x-data="friendsApp()">
     <h1 class="text-xl font-bold mb-4">Steam Friends Lookup</h1>
@@ -35,8 +35,16 @@
         Submit
     </button>
 
+    <!-- Search Friends -->
+    <input
+            type="text"
+            x-model="searchQuery"
+            placeholder="Search friends..."
+            class="w-full mt-4 p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+    >
+
     <!-- Friends List -->
-    <div id="friendsList" class="mt-4 overflow-y-auto max-h-80 bg-gray-100 p-3 rounded-md">
+    <div id="friendsList" class="mt-4 overflow-y-auto max-h-[500px] bg-gray-100 p-3 rounded-md">
         <template x-if="loading">
             <p class="text-blue-500">Loading...</p>
         </template>
@@ -45,17 +53,50 @@
             <p class="text-red-500" x-text="error"></p>
         </template>
 
-        <ul x-show="friends.length" class="space-y-4">
-            <template x-for="friend in friends" :key="friend.steamid">
-                <li class="flex items-center p-3 bg-white shadow rounded-md">
-                    <img :src="friend.avatarfull" alt="Avatar" class="w-12 h-12 rounded-full mr-3">
-                    <div>
+        <ul x-show="filteredFriends.length" class="space-y-4">
+            <template x-for="friend in filteredFriends" :key="friend.steamid">
+                <li class="flex items-center justify-between p-3 bg-white shadow rounded-md">
+                    <div class="flex items-center">
+                        <img :src="friend.avatarfull" alt="Avatar" class="w-12 h-12 rounded-full mr-3">
                         <a :href="friend.profileurl" target="_blank" class="font-semibold text-blue-600 hover:underline" x-text="friend.personaname"></a>
                     </div>
+                    <button
+                            @click="addFriend(friend)"
+                            class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
+                    >
+                        Add
+                    </button>
                 </li>
             </template>
         </ul>
     </div>
+
+    <!-- Selected Friends List -->
+    <div class="mt-6 bg-gray-200 p-4 rounded-md">
+        <h2 class="text-lg font-bold mb-2">Selected Friends</h2>
+        <ul class="space-y-2">
+            <template x-for="friend in selectedFriends" :key="friend.steamid">
+                <li class="flex items-center justify-between bg-white p-2 rounded-md shadow">
+                    <span x-text="friend.personaname"></span>
+                    <button
+                            @click="removeFriend(friend)"
+                            class="text-red-500 hover:text-red-700"
+                    >
+                        ✖
+                    </button>
+                </li>
+            </template>
+        </ul>
+    </div>
+
+    <!-- Submit Selected Friends -->
+    <button
+            @click="submitFriends"
+            class="mt-4 w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800"
+            :disabled="selectedFriends.length === 0"
+    >
+        Get Recommendations
+    </button>
 </div>
 
 <script>
@@ -63,6 +104,8 @@
         return {
             steamId: '',
             friends: [],
+            selectedFriends: [],
+            searchQuery: '',
             loading: false,
             error: '',
 
@@ -90,6 +133,39 @@
                     this.error = err.message;
                 } finally {
                     this.loading = false;
+                }
+            },
+
+            get filteredFriends() {
+                return this.friends.filter(friend =>
+                    friend.personaname.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+            },
+
+            addFriend(friend) {
+                if (!this.selectedFriends.some(f => f.steamid === friend.steamid)) {
+                    this.selectedFriends.push(friend);
+                }
+            },
+
+            removeFriend(friend) {
+                this.selectedFriends = this.selectedFriends.filter(f => f.steamid !== friend.steamid);
+            },
+
+            async submitFriends() {
+                if (this.selectedFriends.length === 0) return;
+
+                const steamIds = this.selectedFriends.map(f => f.steamid).join(',');
+
+                try {
+                    const response = await fetch(`/api/getRecommendations?steamId=${steamIds}`);
+                    if (!response.ok) throw new Error('Failed to get recommendations.');
+
+                    const data = await response.json();
+                    console.log('Recommendations:', data);
+                    alert('Recommendations fetched successfully! Check console for results.');
+                } catch (err) {
+                    alert('Error fetching recommendations.');
                 }
             }
         };
