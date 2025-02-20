@@ -156,7 +156,6 @@
             error: '',
             showRecommendations: false,
             loadingRecommendations: false,
-            hideUI: false, // NEW: Controls full screen hiding
 
             async fetchFriends() {
                 if (!this.steamId) {
@@ -202,8 +201,8 @@
             },
 
             async submitFriends() {
-                this.hideUI = true; // Hides everything immediately
-                this.loadingRecommendations = true;
+                this.loadingRecommendations = true; // Show only loading spinner
+                this.showRecommendations = false;
 
                 const steamIds = this.selectedFriends.map(f => f.steamid);
                 const queryString = steamIds.map(id => `steamId=${id}`).join('&');
@@ -222,11 +221,12 @@
 
             resetView() {
                 this.showRecommendations = false;
-                this.hideUI = false; // Restores the UI
+                this.loadingRecommendations = false;
             }
         };
     }
 </script>
+
 
 </body>
 </html>
