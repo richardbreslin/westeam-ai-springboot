@@ -8,103 +8,137 @@
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
-    <!-- Tailwind for styling -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
 
-<div x-data="friendsApp()" class="flex w-full max-w-5xl bg-white p-6 rounded-lg shadow-md space-x-6">
+<div x-data="friendsApp()" class="w-full max-w-5xl bg-white p-6 rounded-lg shadow-md">
 
-    <!-- Friends List Panel (Left) -->
-    <div :class="{'w-full': selectedFriends.length === 0, 'w-1/2': selectedFriends.length > 0}" class="transition-all p-4">
+    <!-- Hide everything when showing recommendations -->
+    <div x-show="!showRecommendations" class="flex space-x-6">
 
-        <h1 class="text-xl font-bold mb-4 text-center">Steam Friends Lookup</h1>
+        <!-- Friends List Panel (Left) -->
+        <div :class="{'w-full': selectedFriends.length === 0, 'w-1/2': selectedFriends.length > 0}" class="transition-all p-4">
+            <h1 class="text-xl font-bold mb-4 text-center">Steam Friends Lookup</h1>
 
-        <!-- Input Field -->
-        <input
-                type="text"
-                x-model="steamId"
-                placeholder="Enter Steam ID..."
-                class="w-full p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
-        >
+            <!-- Input Field -->
+            <input
+                    type="text"
+                    x-model="steamId"
+                    placeholder="Enter Steam ID..."
+                    class="w-full p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+            >
 
-        <!-- Submit Button -->
-        <button
-                @click="fetchFriends"
-                class="mt-4 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
-        >
-            Submit
-        </button>
+            <!-- Submit Button -->
+            <button
+                    @click="fetchFriends"
+                    class="mt-4 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+            >
+                Submit
+            </button>
 
-        <!-- Search Friends -->
-        <input
-                type="text"
-                x-model="searchQuery"
-                placeholder="Search friends..."
-                class="w-full mt-4 p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
-        >
+            <!-- Search Friends -->
+            <input
+                    type="text"
+                    x-model="searchQuery"
+                    placeholder="Search friends..."
+                    class="w-full mt-4 p-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-300"
+            >
 
-        <!-- Friends List -->
-        <div id="friendsList" class="mt-4 overflow-y-auto max-h-[500px] bg-gray-100 p-3 rounded-md">
-            <template x-if="loading">
-                <p class="text-blue-500">Loading...</p>
-            </template>
+            <!-- Friends List -->
+            <div class="mt-4 overflow-y-auto max-h-[500px] bg-gray-100 p-3 rounded-md">
+                <template x-if="loading">
+                    <p class="text-blue-500">Loading...</p>
+                </template>
 
-            <template x-if="error">
-                <p class="text-red-500" x-text="error"></p>
-            </template>
+                <template x-if="error">
+                    <p class="text-red-500" x-text="error"></p>
+                </template>
 
-            <ul x-show="filteredFriends.length" class="space-y-4">
-                <template x-for="friend in filteredFriends" :key="friend.steamid">
-                    <li class="flex items-center justify-between p-3 bg-white shadow rounded-md">
+                <ul x-show="filteredFriends.length" class="space-y-4">
+                    <template x-for="friend in filteredFriends" :key="friend.steamid">
+                        <li class="flex items-center justify-between p-3 bg-white shadow rounded-md">
+                            <div class="flex items-center">
+                                <img :src="friend.avatarfull" alt="Avatar" class="w-12 h-12 rounded-full mr-3">
+                                <a :href="friend.profileurl" target="_blank" class="font-semibold text-blue-600 hover:underline" x-text="friend.personaname"></a>
+                            </div>
+                            <button
+                                    @click="addFriend(friend)"
+                                    class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
+                            >
+                                Add
+                            </button>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Selected Friends Panel (Right) -->
+        <div x-show="selectedFriends.length > 0" class="transition-all duration-300 ease-in-out w-1/2 bg-gray-200 p-4 rounded-md">
+            <h2 class="text-lg font-bold mb-2 text-center">Selected Friends</h2>
+
+            <ul class="space-y-2">
+                <template x-for="friend in selectedFriends" :key="friend.steamid">
+                    <li class="flex items-center justify-between bg-white p-2 rounded-md shadow">
                         <div class="flex items-center">
-                            <img :src="friend.avatarfull" alt="Avatar" class="w-12 h-12 rounded-full mr-3">
-                            <a :href="friend.profileurl" target="_blank" class="font-semibold text-blue-600 hover:underline" x-text="friend.personaname"></a>
+                            <img :src="friend.avatarfull" alt="Avatar" class="w-10 h-10 rounded-full mr-3">
+                            <span x-text="friend.personaname"></span>
                         </div>
                         <button
-                                @click="addFriend(friend)"
-                                class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600"
+                                @click="removeFriend(friend)"
+                                class="text-red-500 hover:text-red-700"
                         >
-                            Add
+                            ✖
                         </button>
                     </li>
                 </template>
             </ul>
+
+            <!-- Submit Selected Friends -->
+            <button
+                    @click="submitFriends"
+                    class="mt-4 w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800"
+            >
+                Get Recommendations
+            </button>
         </div>
     </div>
 
-    <!-- Selected Friends Panel (Right) -->
-    <div x-show="selectedFriends.length > 0" class="transition-all duration-300 ease-in-out w-1/2 bg-gray-200 p-4 rounded-md">
-        <h2 class="text-lg font-bold mb-2 text-center">Selected Friends</h2>
+    <!-- Loading Indicator -->
+    <div x-show="loadingRecommendations" class="flex flex-col items-center justify-center min-h-[200px]">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500"></div>
+        <p class="mt-4 text-lg text-gray-700">Fetching recommendations...</p>
+    </div>
 
-        <ul class="space-y-2">
-            <template x-for="friend in selectedFriends" :key="friend.steamid">
-                <li class="flex items-center justify-between bg-white p-2 rounded-md shadow">
-                    <div class="flex items-center">
-                        <!-- Avatar on the right panel -->
-                        <img :src="friend.avatarfull" alt="Avatar" class="w-10 h-10 rounded-full mr-3">
-                        <span x-text="friend.personaname"></span>
-                    </div>
-                    <button
-                            @click="removeFriend(friend)"
-                            class="text-red-500 hover:text-red-700"
-                    >
-                        ✖
-                    </button>
+    <!-- Recommendations View -->
+    <div x-show="showRecommendations" class="p-6">
+        <h2 class="text-2xl font-bold text-center mb-4">Game Recommendations</h2>
+
+        <ul class="space-y-4">
+            <template x-for="game in recommendations" :key="game.title">
+                <li class="bg-gray-100 p-4 rounded-lg shadow-md">
+                    <a
+                            :href="'https://store.steampowered.com/search/?term=' + encodeURIComponent(game.title)"
+                            target="_blank"
+                            class="text-xl font-semibold text-blue-600 hover:underline"
+                            x-text="game.title"
+                    ></a>
+                    <p class="mt-2 text-gray-700" x-text="game.reason"></p>
                 </li>
             </template>
         </ul>
 
-        <!-- Submit Selected Friends -->
         <button
-                @click="submitFriends"
-                class="mt-4 w-full bg-blue-700 text-white py-2 rounded-md hover:bg-blue-800"
-                :disabled="selectedFriends.length === 0"
+                @click="resetView"
+                class="mt-6 w-full bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600"
         >
-            Get Recommendations
+            Back
         </button>
     </div>
 
@@ -117,8 +151,11 @@
             friends: [],
             selectedFriends: [],
             searchQuery: '',
+            recommendations: [],
             loading: false,
             error: '',
+            showRecommendations: false,
+            loadingRecommendations: false,
 
             async fetchFriends() {
                 if (!this.steamId) {
@@ -164,20 +201,25 @@
             },
 
             async submitFriends() {
-                if (this.selectedFriends.length === 0) return;
+                this.loadingRecommendations = true;
 
-                const steamIds = this.selectedFriends.map(f => f.steamid).join(',');
+                const steamIds = this.selectedFriends.map(f => f.steamid);
+                const queryString = steamIds.map(id => `steamId=${id}`).join('&');
 
                 try {
-                    const response = await fetch(`/api/getRecommendations?steamId=${steamIds}`);
+                    const response = await fetch(`/api/getRecommendations?${queryString}`);
                     if (!response.ok) throw new Error('Failed to get recommendations.');
 
                     const data = await response.json();
-                    console.log('Recommendations:', data);
-                    alert('Recommendations fetched successfully! Check console for results.');
-                } catch (err) {
-                    alert('Error fetching recommendations.');
+                    this.recommendations = data.recommendations;
+                    this.showRecommendations = true;
+                } finally {
+                    this.loadingRecommendations = false;
                 }
+            },
+
+            resetView() {
+                this.showRecommendations = false;
             }
         };
     }
