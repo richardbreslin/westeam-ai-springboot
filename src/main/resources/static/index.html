@@ -156,6 +156,7 @@
             error: '',
             showRecommendations: false,
             loadingRecommendations: false,
+            hideUI: false, // NEW: Controls full screen hiding
 
             async fetchFriends() {
                 if (!this.steamId) {
@@ -201,6 +202,7 @@
             },
 
             async submitFriends() {
+                this.hideUI = true; // Hides everything immediately
                 this.loadingRecommendations = true;
 
                 const steamIds = this.selectedFriends.map(f => f.steamid);
@@ -220,6 +222,7 @@
 
             resetView() {
                 this.showRecommendations = false;
+                this.hideUI = false; // Restores the UI
             }
         };
     }
