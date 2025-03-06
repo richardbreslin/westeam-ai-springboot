@@ -3,11 +3,15 @@ package com.richardbreslin.westeam.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.richardbreslin.westeam.data.*;
+import com.richardbreslin.westeam.entity.SteamAppEntity;
+import com.richardbreslin.westeam.repository.WesteamRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,12 +19,16 @@ import java.util.List;
 public class SteamService {
 
     private final RestTemplate restTemplate;
+    private final WesteamRepository westeamRepository;
+
+
 
     @Value("${steam.api.key}")
     private String steamApiKey;
 
-    public SteamService(RestTemplate restTemplate) {
+    public SteamService(RestTemplate restTemplate, WesteamRepository westeamRepository) {
         this.restTemplate = restTemplate;
+        this.westeamRepository = westeamRepository;
     }
 
     public ResponseEntity<String> getFriends(String steamId) throws JsonProcessingException {
@@ -59,17 +67,51 @@ public class SteamService {
         return allOwnedGames;
     }
 
-    public List<GameDetails> getGameDetails(List<String> appId) throws JsonProcessingException {
-        List<GameDetails> gameDetails = new ArrayList<>();
+    public List<String> getGameDetails(List<String> appId) throws JsonProcessingException {
+        List<String> gameDetails = new ArrayList<>();
 
         for (String appid : appId) {
-            String url = "https://store.steampowered.com/api/appdetails?appids=" + appid + "&l=english";
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-            ObjectMapper mapper = new ObjectMapper();
-            GameDetails gameDetail = mapper.readValue(response.getBody(), GameDetails.class);
-            gameDetails.add(gameDetail);
+
+            String response = getSteamAppIdDetails(appid);
+
+            if (response == null || response.isEmpty()) {
+                System.out.println(appid + " not found in local database, fetching from Steam API");
+                String details = getSteamAppDetails(appid);
+                if (details != null && !details.isEmpty()) {
+                    insertSteamAppDetails(appid, details);
+                }
+            }
+
+//            ObjectMapper mapper = new ObjectMapper();
+//            GameDetails gameDetail = mapper.readValue(response, GameDetails.class);
+            gameDetails.add(response);
         }
         return gameDetails;
+    }
+
+    private String getSteamAppIdDetails(String appid) {
+        SteamAppEntity entity = westeamRepository.findById(appid).orElse(null);
+        return entity != null ? entity.getDetails() : null;
+    }
+
+    private void insertSteamAppDetails(String appid, String details) {
+        SteamAppEntity entity = SteamAppEntity.builder()
+                .details(details)
+                .updatedAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
+                .appid(appid)
+                .build();
+        westeamRepository.save(entity);
+        System.out.println("Saved app details for: " + appid);
+    }
+
+
+
+    public SteamAppList getSteamAppList() throws JsonProcessingException {
+        String url = "http://api.steampowered.com/ISteamApps/GetAppList/v2";
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(response.getBody(), SteamAppList.class);
     }
 
     private FriendListResponse ISteamUserGetFriendList(String steamId) throws JsonProcessingException {
@@ -86,4 +128,15 @@ public class SteamService {
         }
         return url.toString();
     }
+
+    public String getSteamAppDetails(String appid) {
+        try {
+            String url = "https://store.steampowered.com/api/appdetails?appids=" + appid + "&l=english";
+            return restTemplate.getForObject(url, String.class);
+        } catch (Exception e) {
+            System.err.println("Error fetching details for appid " + appid + ": " + e.getMessage());
+            return null;
+        }
+    }
+
 }

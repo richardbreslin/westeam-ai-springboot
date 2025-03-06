@@ -30,7 +30,7 @@ public class Prompt {
             
             """;
 
-    public String buildPrompt(List<GameDetails> gameDetailsList) {
+    public String buildPrompt(List<String> gameDetailsList) {
         ObjectMapper objectMapper = new ObjectMapper();
         return PROMPT + gameDetailsList.stream()
                 .map(gameDetails -> {
