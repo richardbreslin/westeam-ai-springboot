@@ -76,9 +76,9 @@ public class SteamService {
 
             if (response == null || response.isEmpty()) {
                 System.out.println(appid + " not found in local database, fetching from Steam API");
-                String details = getSteamAppDetails(appid);
-                if (details != null && !details.isEmpty()) {
-                    insertSteamAppDetails(appid, details);
+                ResponseEntity<String> details = getSteamAppDetails(appid);
+                if (details.getBody() != null && !details.getBody().isEmpty()) {
+                    insertSteamAppDetails(appid, details.getBody());
                 }
             }
 
@@ -129,14 +129,13 @@ public class SteamService {
         return url.toString();
     }
 
-    public String getSteamAppDetails(String appid) {
+    public ResponseEntity<String> getSteamAppDetails(String appid) {
         try {
             String url = "https://store.steampowered.com/api/appdetails?appids=" + appid + "&l=english";
-            return restTemplate.getForObject(url, String.class);
+            return restTemplate.getForEntity(url, String.class);
         } catch (Exception e) {
             System.err.println("Error fetching details for appid " + appid + ": " + e.getMessage());
-            return null;
+            return ResponseEntity.status(500).body("Error fetching details");
         }
     }
-
 }
